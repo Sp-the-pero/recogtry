@@ -14,49 +14,46 @@ def is_within_radius(user_lat, user_lon, lib_lat, lib_lon, radius):
 
 st.subheader("Mark Attendance")
 
-# JavaScript code to automatically get location and pass it to Streamlit
+# JavaScript code to fetch user location through Geolocation API
 geolocation_script = """
     <script>
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
+                console.log("Location fetched:", lat, lon);
                 document.getElementById("user_lat").value = lat;
                 document.getElementById("user_lon").value = lon;
                 document.getElementById("location_button").click();
             },
             (error) => {
-                console.log(error);
-            }
+                console.error("Error fetching location:", error);
+                alert("Could not fetch location. Ensure location access is enabled in your browser.");
+            },
+            {timeout: 10000}
         );
     </script>
 """
 
-# Render the geolocation script on the page
+# Render the geolocation script
 st.markdown(geolocation_script, unsafe_allow_html=True)
 
-# Create hidden inputs to capture the latitude and longitude from the script
-user_lat = st.empty()
-user_lon = st.empty()
+# Hidden button to trigger attendance marking
+user_lat = st.text_input("Latitude", "", key="user_lat")
+user_lon = st.text_input("Longitude", "", key="user_lon")
+submit_button = st.button("Mark Attendance", key="location_button", help="Click this only after location is fetched.")
 
-# Use a button to trigger the location fetch
-submit_button = st.button(" ", key="location_button")
-
-# Get the latitude and longitude
-user_lat = st.session_state.get("user_lat", "")
-user_lon = st.session_state.get("user_lon", "")
-
-# Display the fetched coordinates
-if submit_button and user_lat and user_lon:
+# Check if the user is within the allowed radius
+if submit_button:
+  if user_lat and user_lon:
     try:
-        # Convert lat and lon to float and check if within radius
-        user_lat = float(user_lat)
-        user_lon = float(user_lon)
-        if is_within_radius(user_lat, user_lon, LIBRARY_LATITUDE, LIBRARY_LONGITUDE, ALLOWED_RADIUS):
-            st.success("You are within the library. Attendance marked.")
-        else:
-            st.error("You are not within the library's allowed radius.")
+      user_lat = float(user_lat)
+      user_lon = float(user_lon)
+      if is_within_radius(user_lat, user_lon, LIBRARY_LATITUDE, LIBRARY_LONGITUDE, ALLOWED_RADIUS):
+        st.success("You are within the library. Attendance marked.")
+      else:
+        st.error("You are not within the library's allowed radius.")
     except ValueError:
-        st.error("Invalid coordinates received.")
-else:
-    st.warning("Fetching location, please allow location access.")
+      st.error("Could not process your location. Invalid latitude or longitude values.")
+  else:
+    st.warning("Could not retrieve your location. Please allow location access.")
