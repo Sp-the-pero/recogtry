@@ -1,8 +1,8 @@
 import streamlit as st
 
 # Coordinates for the library (replace with actual values)
-LIBRARY_LATITUDE = 24.8676352
-LIBRARY_LONGITUDE = 67.076096
+LIBRARY_LATITUDE = 24.8640337
+LIBRARY_LONGITUDE = 67.0157538
 ALLOWED_RADIUS = 50  # meters
 
 def is_within_radius(user_lat, user_lon, lib_lat, lib_lon, radius):
